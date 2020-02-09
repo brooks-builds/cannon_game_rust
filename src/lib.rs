@@ -20,19 +20,22 @@ pub struct Game {
     cannon: Cannon,
     target: Target,
     cannonball: CannonBall,
+    is_firing: bool,
 }
 
 impl Game {
-    pub fn new() -> Game {
-        let cannon = Cannon::new(0.0, 255.0 - 25.0, 100.0, 50.0);
+    pub fn new() -> GameResult<Game> {
+        let cannon = Cannon::new(100.0, 100.0 - 25.0, 100.0, 50.0);
         let target = Target::new(1490.0, 100.0, 5.0, 75.0);
-        let cannonball = CannonBall::new(100.0, 50.0, 15.0);
+        let cannonball = CannonBall::new(cannon.location_vector(), 5.0);
+        let is_firing = false;
 
-        Game {
+        Ok(Game {
             cannon,
             target,
             cannonball,
-        }
+            is_firing,
+        })
     }
 
     fn get_mouse_location(&self, context: &mut Context) -> Vector2<f32> {
@@ -55,7 +58,15 @@ impl EventHandler for Game {
             self.cannon.location_vector(),
         )?;
 
+        if mouse::button_pressed(context, mouse::MouseButton::Left) {
+            self.is_firing = true;
+            let direction =
+                (self.get_mouse_location(context) - self.cannon.location_vector()) * 0.001;
+            self.cannonball.set_velocity(direction);
+        }
+
         self.cannon.set_rotation(cannon_angle)?;
+        self.cannonball.update();
         Ok(())
     }
 
@@ -68,6 +79,11 @@ impl EventHandler for Game {
 
         draw(
             context,
+            &cannonball,
+            DrawParam::default().dest(self.cannonball.location()),
+        )?;
+        draw(
+            context,
             &cannon,
             DrawParam::default()
                 .rotation(self.cannon.get_rotation()?)
@@ -78,12 +94,6 @@ impl EventHandler for Game {
             context,
             &target,
             DrawParam::default().dest(self.target.location()),
-        )?;
-
-        draw(
-            context,
-            &cannonball,
-            DrawParam::default().dest(self.cannonball.location()),
         )?;
 
         graphics::present(context)
