@@ -1,10 +1,14 @@
-use bbggez::ggez::{
-    event::EventHandler,
-    graphics,
-    graphics::{draw, drawable_size, DrawParam},
-    input::mouse,
-    nalgebra::{Rotation2, Vector2},
-    Context, GameResult,
+use bbggez::{
+    ggez::{
+        event::EventHandler,
+        graphics,
+        graphics::{draw, drawable_size, DrawParam},
+        input::mouse,
+        nalgebra::{Rotation2, Vector2},
+        Context, GameResult,
+    },
+    rand,
+    rand::prelude::*,
 };
 use std::f32::consts::PI;
 
@@ -22,15 +26,21 @@ pub struct Game {
     cannonball: CannonBall,
     is_firing: bool,
     gravity: Vector2<f32>,
+    wind: Vector2<f32>,
 }
 
 impl Game {
     pub fn new() -> GameResult<Game> {
+        let mut rng = rand::thread_rng();
         let cannon = Cannon::new(100.0, 100.0 - 25.0, 100.0, 50.0);
         let target = Target::new(1490.0, 100.0, 5.0, 75.0);
         let cannonball = CannonBall::new(cannon.location_vector(), 5.0);
         let is_firing = false;
         let gravity = Vector2::new(0.0, 0.0001);
+        let wind = Vector2::new(
+            rng.gen_range(-0.00001, 0.00001),
+            rng.gen_range(-0.00001, 0.00001),
+        );
 
         Ok(Game {
             cannon,
@@ -38,6 +48,7 @@ impl Game {
             cannonball,
             is_firing,
             gravity,
+            wind,
         })
     }
 
@@ -70,6 +81,7 @@ impl EventHandler for Game {
 
         if self.is_firing {
             self.cannonball.apply_force(self.gravity);
+            self.cannonball.apply_force(self.wind);
         }
 
         self.cannon.set_rotation(cannon_angle)?;

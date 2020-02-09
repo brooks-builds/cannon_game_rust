@@ -9,7 +9,7 @@
 - [x] Cannon points towards the mouse
 - [x] Cannon fires cannonball toward the mouse when clicked
 - [x] Cannonball is affected by gravity
-- [ ] Cannonball is affected by wind
+- [x] Cannonball is affected by wind
 - [ ] Wind indicator is displayed
 - [ ] Missing resets the cannonball
 - [ ] Hitting the target resets target, ball, and wind
