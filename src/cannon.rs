@@ -44,8 +44,17 @@ impl Cannon {
             .build(context)
     }
 
-    pub fn location(&self) -> Point2<f32> {
+    pub fn location_point(&self) -> Point2<f32> {
         Point2::new(self.location.x, self.location.y)
+    }
+    pub fn location_vector(&self) -> Vector2<f32> {
+        self.location
+    }
+    pub fn location_vector_center(&self) -> GameResult<Vector2<f32>> {
+        Ok(Vector2::new(
+            self.location.x + self.width / 2.0,
+            self.location.y + self.height / 2.0,
+        ))
     }
     pub fn get_rotation(&self) -> GameResult<f32> {
         Ok(self.rotation)
