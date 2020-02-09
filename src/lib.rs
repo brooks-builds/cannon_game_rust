@@ -4,7 +4,7 @@ use bbggez::{
         graphics,
         graphics::{draw, drawable_size, DrawParam},
         input::mouse,
-        nalgebra::{Rotation2, Vector2},
+        nalgebra::{Point2, Rotation2, Vector2},
         Context, GameResult,
     },
     rand,
@@ -15,10 +15,12 @@ use std::f32::consts::PI;
 mod cannon;
 mod cannonball;
 mod target;
+mod wind_indicator;
 
 use cannon::Cannon;
 use cannonball::CannonBall;
 use target::Target;
+use wind_indicator::WindIndicator;
 
 pub struct Game {
     cannon: Cannon,
@@ -27,6 +29,7 @@ pub struct Game {
     is_firing: bool,
     gravity: Vector2<f32>,
     wind: Vector2<f32>,
+    wind_indicator: WindIndicator,
 }
 
 impl Game {
@@ -41,6 +44,7 @@ impl Game {
             rng.gen_range(-0.00001, 0.00001),
             rng.gen_range(-0.00001, 0.00001),
         );
+        let wind_indicator = WindIndicator::new();
 
         Ok(Game {
             cannon,
@@ -49,6 +53,7 @@ impl Game {
             is_firing,
             gravity,
             wind,
+            wind_indicator,
         })
     }
 
@@ -61,7 +66,11 @@ impl Game {
     fn get_vector_angle(&self, vector_1: Vector2<f32>, vector_2: Vector2<f32>) -> GameResult<f32> {
         let direction = vector_1 - vector_2;
 
-        Ok(direction.y.atan2(direction.x))
+        Ok(self.get_angle(direction)?)
+    }
+
+    fn get_angle(&self, vector: Vector2<f32>) -> GameResult<f32> {
+        Ok(vector.y.atan2(vector.x))
     }
 }
 
@@ -92,9 +101,12 @@ impl EventHandler for Game {
     fn draw(&mut self, context: &mut Context) -> GameResult<()> {
         graphics::clear(context, graphics::WHITE);
 
+        let (arena_width, arena_height) = drawable_size(context);
+
         let cannon = self.cannon.draw(context)?;
         let target = self.target.draw(context)?;
         let cannonball = self.cannonball.draw(context)?;
+        let wind_indicator = self.wind_indicator.draw(context)?;
 
         draw(
             context,
@@ -113,6 +125,14 @@ impl EventHandler for Game {
             context,
             &target,
             DrawParam::default().dest(self.target.location()),
+        )?;
+
+        draw(
+            context,
+            &wind_indicator,
+            DrawParam::default()
+                .dest(Point2::new(arena_width / 2.0, arena_height - 20.0))
+                .rotation(self.get_angle(self.wind)?),
         )?;
 
         graphics::present(context)

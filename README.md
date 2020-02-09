@@ -10,6 +10,7 @@
 - [x] Cannon fires cannonball toward the mouse when clicked
 - [x] Cannonball is affected by gravity
 - [x] Cannonball is affected by wind
-- [ ] Wind indicator is displayed
+- [x] Wind indicator is displayed
 - [ ] Missing resets the cannonball
 - [ ] Hitting the target resets target, ball, and wind
+- [ ] Change the cannon to be a sprite of a cannon
