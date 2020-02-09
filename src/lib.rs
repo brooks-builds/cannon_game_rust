@@ -21,6 +21,7 @@ pub struct Game {
     target: Target,
     cannonball: CannonBall,
     is_firing: bool,
+    gravity: Vector2<f32>,
 }
 
 impl Game {
@@ -29,12 +30,14 @@ impl Game {
         let target = Target::new(1490.0, 100.0, 5.0, 75.0);
         let cannonball = CannonBall::new(cannon.location_vector(), 5.0);
         let is_firing = false;
+        let gravity = Vector2::new(0.0, 0.0001);
 
         Ok(Game {
             cannon,
             target,
             cannonball,
             is_firing,
+            gravity,
         })
     }
 
@@ -58,11 +61,15 @@ impl EventHandler for Game {
             self.cannon.location_vector(),
         )?;
 
-        if mouse::button_pressed(context, mouse::MouseButton::Left) {
+        if mouse::button_pressed(context, mouse::MouseButton::Left) && !self.is_firing {
             self.is_firing = true;
             let direction =
                 (self.get_mouse_location(context) - self.cannon.location_vector()) * 0.001;
             self.cannonball.set_velocity(direction);
+        }
+
+        if self.is_firing {
+            self.cannonball.apply_force(self.gravity);
         }
 
         self.cannon.set_rotation(cannon_angle)?;

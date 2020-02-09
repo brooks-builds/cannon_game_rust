@@ -8,7 +8,7 @@
 - [x] Created target
 - [x] Cannon points towards the mouse
 - [x] Cannon fires cannonball toward the mouse when clicked
-- [ ] Cannonball is affected by gravity
+- [x] Cannonball is affected by gravity
 - [ ] Cannonball is affected by wind
 - [ ] Wind indicator is displayed
 - [ ] Missing resets the cannonball

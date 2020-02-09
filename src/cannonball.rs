@@ -43,4 +43,8 @@ impl CannonBall {
     pub fn set_velocity(&mut self, new_velocity: Vector2<f32>) {
         self.velocity = new_velocity;
     }
+
+    pub fn apply_force(&mut self, force: Vector2<f32>) {
+        self.velocity += force;
+    }
 }
