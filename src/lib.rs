@@ -30,6 +30,7 @@ pub struct Game {
     gravity: Vector2<f32>,
     wind: Vector2<f32>,
     wind_indicator: WindIndicator,
+    ready_to_fire: bool,
 }
 
 impl Game {
@@ -45,6 +46,7 @@ impl Game {
             rng.gen_range(-0.00001, 0.00001),
         );
         let wind_indicator = WindIndicator::new();
+        let ready_to_fire = true;
 
         Ok(Game {
             cannon,
@@ -54,6 +56,7 @@ impl Game {
             gravity,
             wind,
             wind_indicator,
+            ready_to_fire,
         })
     }
 
@@ -72,29 +75,50 @@ impl Game {
     fn get_angle(&self, vector: Vector2<f32>) -> GameResult<f32> {
         Ok(vector.y.atan2(vector.x))
     }
+
+    fn reset_cannonball(&mut self) -> GameResult<()> {
+        self.cannonball
+            .reset_location(self.cannon.location_vector())?;
+        self.is_firing = false;
+        self.ready_to_fire = true;
+
+        Ok(())
+    }
+
+    fn did_miss(&self, arena_width: f32, arena_height: f32) -> GameResult<bool> {
+        Ok(
+            self.cannonball.location().y - self.cannonball.get_size()? > arena_height
+                || self.cannonball.location().x - self.cannonball.get_size()? > arena_width,
+        )
+    }
 }
 
 impl EventHandler for Game {
     fn update(&mut self, context: &mut Context) -> GameResult<()> {
+        let (arena_width, arena_height) = drawable_size(context);
         let cannon_angle = self.get_vector_angle(
             self.get_mouse_location(context),
             self.cannon.location_vector(),
         )?;
 
-        if mouse::button_pressed(context, mouse::MouseButton::Left) && !self.is_firing {
+        if mouse::button_pressed(context, mouse::MouseButton::Left) && self.ready_to_fire {
             self.is_firing = true;
+            self.ready_to_fire = false;
             let direction =
                 (self.get_mouse_location(context) - self.cannon.location_vector()) * 0.001;
             self.cannonball.set_velocity(direction);
         }
 
-        if self.is_firing {
+        if self.is_firing && self.did_miss(arena_width, arena_height)? {
+            self.reset_cannonball()?;
+        }
+        if !self.ready_to_fire {
             self.cannonball.apply_force(self.gravity);
             self.cannonball.apply_force(self.wind);
+            self.cannonball.update();
         }
 
         self.cannon.set_rotation(cannon_angle)?;
-        self.cannonball.update();
         Ok(())
     }
 

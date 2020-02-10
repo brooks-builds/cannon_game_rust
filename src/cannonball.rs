@@ -47,4 +47,14 @@ impl CannonBall {
     pub fn apply_force(&mut self, force: Vector2<f32>) {
         self.velocity += force;
     }
+
+    pub fn reset_location(&mut self, new_location: Vector2<f32>) -> GameResult<()> {
+        self.location = new_location;
+
+        Ok(())
+    }
+
+    pub fn get_size(&self) -> GameResult<f32> {
+        Ok(self.size)
+    }
 }
