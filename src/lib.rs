@@ -31,22 +31,20 @@ pub struct Game {
     wind: Vector2<f32>,
     wind_indicator: WindIndicator,
     ready_to_fire: bool,
+    score: u8,
 }
 
 impl Game {
     pub fn new() -> GameResult<Game> {
-        let mut rng = rand::thread_rng();
         let cannon = Cannon::new(0.0, 250.0 - 25.0, 100.0, 50.0);
-        let target = Target::new(1490.0, 100.0, 5.0, 75.0);
+        let target = Target::new(1490.0, 0.0, 5.0, 75.0);
         let cannonball = CannonBall::new(cannon.location_vector(), 5.0);
         let is_firing = false;
         let gravity = Vector2::new(0.0, 0.0001);
-        let wind = Vector2::new(
-            rng.gen_range(-0.00001, 0.00001),
-            rng.gen_range(-0.00001, 0.00001),
-        );
+        let wind = Game::reset_wind()?;
         let wind_indicator = WindIndicator::new();
         let ready_to_fire = true;
+        let score = 0;
 
         Ok(Game {
             cannon,
@@ -57,6 +55,7 @@ impl Game {
             wind,
             wind_indicator,
             ready_to_fire,
+            score,
         })
     }
 
@@ -113,6 +112,20 @@ impl Game {
 
         Ok(false)
     }
+
+    fn reset_wind() -> GameResult<Vector2<f32>> {
+        let mut rng = rand::thread_rng();
+
+        Ok(Vector2::new(
+            rng.gen_range(-0.0001, 0.0001),
+            rng.gen_range(-0.0001, 0.0001),
+        ))
+    }
+
+    fn target_off_screen(&self, arena_height: f32) -> GameResult<bool> {
+        Ok(self.target.location().y < 0.0
+            || self.target.location().y + self.target.get_height()? > arena_height)
+    }
 }
 
 impl EventHandler for Game {
@@ -142,9 +155,17 @@ impl EventHandler for Game {
 
         if self.is_firing && self.did_hit_target()? {
             self.reset_cannonball()?;
+            self.wind = Self::reset_wind()?;
+            self.target.increase_speed()?;
+            self.score += 1;
+        }
+
+        if self.target_off_screen(arena_height)? {
+            self.target.bounce()?;
         }
 
         self.cannon.set_rotation(cannon_angle)?;
+        self.target.move_target()?;
         Ok(())
     }
 
@@ -157,6 +178,7 @@ impl EventHandler for Game {
         let target = self.target.draw(context)?;
         let cannonball = self.cannonball.draw(context)?;
         let wind_indicator = self.wind_indicator.draw(context)?;
+        let score = graphics::Text::new(format!("Score: {}", self.score));
 
         draw(
             context,
@@ -183,6 +205,15 @@ impl EventHandler for Game {
             DrawParam::default()
                 .dest(Point2::new(arena_width / 2.0, arena_height - 20.0))
                 .rotation(self.get_angle(self.wind)?),
+        )?;
+
+        draw(
+            context,
+            &score,
+            DrawParam::default()
+                .color(graphics::BLACK)
+                .scale(Vector2::new(2.0, 2.0))
+                .dest(Point2::new(5.0, 5.0)),
         )?;
 
         graphics::present(context)

@@ -13,7 +13,7 @@
 - [x] Wind indicator is displayed
 - [x] Missing resets the cannonball
 - [x] Hitting the target resets target, ball, and wind
-- [ ] Show score
+- [x] Show score
 
 ### Stretch Goals
 
