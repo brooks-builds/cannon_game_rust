@@ -36,7 +36,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> GameResult<Game> {
         let mut rng = rand::thread_rng();
-        let cannon = Cannon::new(100.0, 100.0 - 25.0, 100.0, 50.0);
+        let cannon = Cannon::new(0.0, 250.0 - 25.0, 100.0, 50.0);
         let target = Target::new(1490.0, 100.0, 5.0, 75.0);
         let cannonball = CannonBall::new(cannon.location_vector(), 5.0);
         let is_firing = false;
@@ -91,6 +91,28 @@ impl Game {
                 || self.cannonball.location().x - self.cannonball.get_size()? > arena_width,
         )
     }
+
+    fn did_hit_target(&self) -> GameResult<bool> {
+        // if top of ball is above bottom of target
+        // and bottom of ball is below top of target
+        // and length between center of ball and left edge or
+        //   right edge is less than ball radius
+        let ball_top = self.cannonball.location().y - self.cannonball.get_size()?;
+        let ball_bottom = self.cannonball.location().y + self.cannonball.get_size()?;
+        let target_top = self.target.location().y;
+        let target_bottom = self.target.location().y + self.target.get_height()?;
+
+        if ball_top < target_bottom && ball_bottom > target_top {
+            let ball_right = self.cannonball.location().x + self.cannonball.get_size()?;
+            let ball_left = self.cannonball.location().x - self.cannonball.get_size()?;
+            let target_left = self.target.location().x;
+            let target_right = self.target.location().x + self.target.get_width()?;
+
+            return Ok(ball_right > target_left && ball_left < target_right);
+        }
+
+        Ok(false)
+    }
 }
 
 impl EventHandler for Game {
@@ -116,6 +138,10 @@ impl EventHandler for Game {
             self.cannonball.apply_force(self.gravity);
             self.cannonball.apply_force(self.wind);
             self.cannonball.update();
+        }
+
+        if self.is_firing && self.did_hit_target()? {
+            self.reset_cannonball()?;
         }
 
         self.cannon.set_rotation(cannon_angle)?;

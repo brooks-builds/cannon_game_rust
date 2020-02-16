@@ -42,4 +42,12 @@ impl Target {
     pub fn location(&self) -> Point2<f32> {
         Point2::from(self.location)
     }
+
+    pub fn get_height(&self) -> GameResult<f32> {
+        Ok(self.height)
+    }
+
+    pub fn get_width(&self) -> GameResult<f32> {
+        Ok(self.width)
+    }
 }

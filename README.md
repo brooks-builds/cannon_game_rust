@@ -12,7 +12,11 @@
 - [x] Cannonball is affected by wind
 - [x] Wind indicator is displayed
 - [x] Missing resets the cannonball
-- [ ] Hitting the target resets target, ball, and wind
-- [ ] Change the cannon to be a sprite of a cannon
+- [x] Hitting the target resets target, ball, and wind
+- [ ] Show score
+
+### Stretch Goals
+
 - [ ] Show the wind using particles
+- [ ] Change the cannon to be a sprite of a cannon
 - [ ] Make physics be based on frame rate
